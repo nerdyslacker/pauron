@@ -241,16 +241,16 @@ def update_pkgbuild_file(file: str, new_pkgver: str, new_sha256: str, new_commit
     logger.info("PKGBUILD file was updated successfully")
 
 
-def regenerate_srcinfo(file: str):
+def regenerate_srcinfo(repo_path: str):
     result = subprocess.run(
         ["makepkg", "--printsrcinfo"],
-        cwd=file,
+        cwd=repo_path,
         capture_output=True,
         text=True,
         check=True
     )
 
-    with open(file, "w") as f:
+    with open(f"{repo_path}/.SRCINFO", "w") as f:
         f.write(result.stdout)
 
     print(".SRCINFO regenerated successfully")
@@ -358,9 +358,9 @@ def main():
         ## path values in files
         file = os.path.join(pkg_name, "PKGBUILD")
         update_pkgbuild_file(file, new_version, new_sha_hash, new_commit_hash)
-        file = os.path.join(pkg_name, ".SRCINFO")
-        regenerate_srcinfo(file)
+        #file = os.path.join(pkg_name, ".SRCINFO")
         #update_dot_srcinfo_file(file, new_version, new_sha_hash, latest_tag)
+        regenerate_srcinfo(pkg_name)
 
         ## remove
         for filename in ["PKGBUILD_old", ".SRCINFO_old"]:
