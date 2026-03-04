@@ -2,13 +2,19 @@ name: Update AUR packages
 
 on:
   workflow_dispatch:
-
   schedule:
     - cron: '0 12,00 * * *'
 
 jobs:
-  update-dinox-aur:
+  update-aur:
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        package:
+          - dinox
 
     steps:
       - name: Checkout repository
@@ -29,4 +35,4 @@ jobs:
         env:
           AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
         run: |
-          python main.py -p dinox
+          python main.py -p ${{ matrix.package }}
