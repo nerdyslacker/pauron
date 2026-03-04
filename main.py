@@ -63,7 +63,7 @@ def setup_ssh_for_aur():
     if os.path.exists(ssh_config_path):
         with open(ssh_config_path, "r") as f:
             existing_config = f.read()
-    
+
     # Only add AUR config if not already present
     if "Host aur.archlinux.org" not in existing_config:
         aur_config = f"""
@@ -241,6 +241,21 @@ def update_pkgbuild_file(file: str, new_pkgver: str, new_sha256: str, new_commit
     logger.info("PKGBUILD file was updated successfully")
 
 
+def regenerate_srcinfo(file: str):
+    result = subprocess.run(
+        ["makepkg", "--printsrcinfo"],
+        cwd=file,
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    with open(file, "w") as f:
+        f.write(result.stdout)
+
+    print(".SRCINFO regenerated successfully")
+
+
 def update_dot_srcinfo_file(
     file: str, new_pkgver: str, new_sha256: str, latest_tag: str
 ):
@@ -250,11 +265,16 @@ def update_dot_srcinfo_file(
     # patch the values
     content = re.sub(r"pkgver = .*", f"pkgver = {new_pkgver}", content)
     content = re.sub(r"sha256sums = .*", f"sha256sums = {new_sha256}", content)
-    content = re.sub(
-        r"source = https://github\.com/rallep71/dinox/archive/.*?\.tar\.gz",
-        f"source = https://github.com/rallep71/dinox/archive/{latest_tag}.tar.gz",
-        content,
-    )
+
+    source_match = re.search(r"^source = (.+)", content, flags=re.MULTILINE)
+    if source_match:
+        old_source = source_match.group(1)
+        new_source = re.sub(
+            r"/archive/.*?\.tar\.gz",
+            f"/archive/{latest_tag}.tar.gz",
+            old_source,
+        )
+        content = content.replace(old_source, new_source)
 
     with open(file, "w") as f:
         f.write(content)
@@ -339,7 +359,8 @@ def main():
         file = os.path.join(pkg_name, "PKGBUILD")
         update_pkgbuild_file(file, new_version, new_sha_hash, new_commit_hash)
         file = os.path.join(pkg_name, ".SRCINFO")
-        update_dot_srcinfo_file(file, new_version, new_sha_hash, latest_tag)
+        regenerate_srcinfo(file)
+        #update_dot_srcinfo_file(file, new_version, new_sha_hash, latest_tag)
 
         ## remove
         for filename in ["PKGBUILD_old", ".SRCINFO_old"]:
