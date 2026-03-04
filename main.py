@@ -251,8 +251,8 @@ def update_dot_srcinfo_file(
     content = re.sub(r"pkgver = .*", f"pkgver = {new_pkgver}", content)
     content = re.sub(r"sha256sums = .*", f"sha256sums = {new_sha256}", content)
     content = re.sub(
-        r"source = k3sup-.*?\.tar\.gz::https://github\.com/alexellis/k3sup/archive/.*?\.tar\.gz",
-        f"source = k3sup-{latest_tag}.tar.gz::https://github.com/alexellis/k3sup/archive/{latest_tag}.tar.gz",
+        r"source = https://github\.com/rallep71/dinox/archive/.*?\.tar\.gz",
+        f"source = https://github.com/rallep71/dinox/archive/{latest_tag}.tar.gz",
         content,
     )
 
