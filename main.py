@@ -242,18 +242,20 @@ def update_pkgbuild_file(file: str, new_pkgver: str, new_sha256: str, new_commit
 
 
 def regenerate_srcinfo(repo_path: str):
-    result = subprocess.run(
-        ["makepkg", "--printsrcinfo"],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=True
-    )
-
-    with open(f"{repo_path}/.SRCINFO", "w") as f:
-        f.write(result.stdout)
-
-    print(".SRCINFO regenerated successfully")
+    try:
+        subprocess.run(
+            ["makepkg", "--printsrcinfo"],
+            cwd=repo_path,
+            stdout=open(f"{repo_path}/.SRCINFO", "w"),
+            stderr=subprocess.PIPE,
+            text=True,
+            check=True
+        )
+        print(".SRCINFO regenerated successfully")
+    except subprocess.CalledProcessError as e:
+        print("makepkg failed:")
+        print(e.stderr)
+        raise
 
 
 def update_dot_srcinfo_file(
@@ -266,12 +268,12 @@ def update_dot_srcinfo_file(
     content = re.sub(r"pkgver = .*", f"pkgver = {new_pkgver}", content)
     content = re.sub(r"sha256sums = .*", f"sha256sums = {new_sha256}", content)
 
-    source_match = re.search(r"^source = (.+)", content, flags=re.MULTILINE)
+    source_match = re.search(r"^\s*source\s*=\s*(.+)", content, flags=re.MULTILINE)
     if source_match:
         old_source = source_match.group(1)
         new_source = re.sub(
             r"/archive/.*?\.tar\.gz",
-            f"/archive/{latest_tag}.tar.gz",
+            f"/archive/refs/tags/{latest_tag}.tar.gz",
             old_source,
         )
         content = content.replace(old_source, new_source)
@@ -358,9 +360,9 @@ def main():
         ## path values in files
         file = os.path.join(pkg_name, "PKGBUILD")
         update_pkgbuild_file(file, new_version, new_sha_hash, new_commit_hash)
-        #file = os.path.join(pkg_name, ".SRCINFO")
-        #update_dot_srcinfo_file(file, new_version, new_sha_hash, latest_tag)
-        regenerate_srcinfo(pkg_name)
+        file = os.path.join(pkg_name, ".SRCINFO")
+        update_dot_srcinfo_file(file, new_version, new_sha_hash, latest_tag)
+        #regenerate_srcinfo(pkg_name)
 
         ## remove
         for filename in ["PKGBUILD_old", ".SRCINFO_old"]:

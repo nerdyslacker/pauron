@@ -34,5 +34,7 @@ jobs:
       - name: Update AUR package
         env:
           AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+          GIT_EMAIL: ${{ vars.GIT_EMAIL }}
+          GIT_NAME: ${{ vars.GIT_NAME }}          
         run: |
           python main.py -p ${{ matrix.package }}
