@@ -3,7 +3,7 @@ name: Update AUR packages
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 12,00 * * *'
+    - cron: "0 12,00 * * *"
 
 jobs:
   update-aur:
@@ -15,6 +15,7 @@ jobs:
       matrix:
         package:
           - dinox
+          - gram
 
     steps:
       - name: Checkout repository
@@ -35,6 +36,6 @@ jobs:
         env:
           AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
           GIT_EMAIL: ${{ vars.GIT_EMAIL }}
-          GIT_NAME: ${{ vars.GIT_NAME }}          
+          GIT_NAME: ${{ vars.GIT_NAME }}
         run: |
           python main.py -p ${{ matrix.package }}
