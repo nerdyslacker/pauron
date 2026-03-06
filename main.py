@@ -172,7 +172,7 @@ _PROVIDERS: dict[str, ForgeProvider] = {
 def get_provider(host: str) -> ForgeProvider:
     if host in _PROVIDERS:
         return _PROVIDERS[host]
-    logger.warning(f"Unknown host '{host}', assuming GitLab-compatible API.")
+    logger.warning(f"Unknown host '{host}', assuming GitHub-compatible API.")
     return GitLabProvider(host=f"https://{host}")
 
 
@@ -410,7 +410,7 @@ def main():
     parser = argparse.ArgumentParser(description="Update AUR package from upstream forge releases")
     parser.add_argument("--pkg-name", "-p", required=True, help="AUR package name (e.g. k3sup)")
     parser.add_argument(
-        "--provider", choices=["github", "gitlab", "codeberg", "auto"], default="github",
+        "--provider", choices=["github", "gitlab", "codeberg", "auto"], default="auto",
         help="Forge provider (default: github)",
     )
     parser.add_argument(
