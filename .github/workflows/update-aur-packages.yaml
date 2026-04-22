@@ -15,7 +15,6 @@ jobs:
       matrix:
         package:
           - dinox
-          - gram
 
     steps:
       - name: Checkout repository
